@@ -1,9 +1,9 @@
 <.header>
   Receita <%= @receita.id %>
-  <:subtitle>This is a receita record from your database.</:subtitle>
+  <:subtitle>Aqui está sua receita.</:subtitle>
   <:actions>
     <.link href={~p"/receitas/#{@receita}/edit"}>
-      <.button>Edit receita</.button>
+      <.button>Editar Receita</.button>
     </.link>
   </:actions>
 </.header>
@@ -15,4 +15,4 @@
   <:item title="Categoria"><%= @receita.categoria %></:item>
 </.list>
 
-<.back navigate={~p"/receitas"}>Back to receitas</.back>
+<.back navigate={~p"/receitas"}>Voltar</.back>

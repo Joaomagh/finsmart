@@ -3,7 +3,7 @@
   <:subtitle>Aqui está sua despesa.</:subtitle>
   <:actions>
     <.link href={~p"/despesas/#{@despesa}/edit"}>
-      <.button>Edit despesa</.button>
+      <.button>Editar despesa</.button>
     </.link>
   </:actions>
 </.header>
@@ -15,4 +15,4 @@
   <:item title="Categoria"><%= @despesa.categoria %></:item>
 </.list>
 
-<.back navigate={~p"/despesas"}>Back to despesas</.back>
+<.back navigate={~p"/despesas"}>Voltar para despesas</.back>
