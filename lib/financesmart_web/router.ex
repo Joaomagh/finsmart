@@ -19,6 +19,9 @@ defmodule FinancesmartWeb.Router do
     resources "/receitas", ReceitaController
     resources "/despesas", DespesaController
 
+    get "/receitas/filtrar", ReceitaController, :filtrar
+    get "/despesas/filtrar", DespesaController, :filtrar
+
     get "/", PageController, :home
 
   end

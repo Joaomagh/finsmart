@@ -1,62 +1,48 @@
 defmodule FinancesmartWeb.ReceitaController do
   use FinancesmartWeb, :controller
+  import Ecto.Query
 
   alias Financesmart.Finance
   alias Financesmart.Finance.Receita
+  alias Financesmart.Repo
 
   def index(conn, _params) do
     receitas = Finance.list_receitas()
     render(conn, :index, receitas: receitas)
   end
 
-  def new(conn, _params) do
-    changeset = Finance.change_receita(%Receita{})
-    render(conn, :new, changeset: changeset)
+  def filtrar(conn, %{"tipo" => tipo, "valor" => valor, "mes" => mes, "ano" => ano, "data_inicio" => data_inicio, "data_fim" => data_fim}) do
+    query =
+      Receita
+      |> filtrar_por_tipo(tipo)
+      |> filtrar_por_valor(valor)
+      |> filtrar_por_mes(mes, ano)
+      |> filtrar_por_periodo(data_inicio, data_fim)
+
+    receitas = Repo.all(query)
+    render(conn, "index.html", receitas: receitas)
   end
 
-  def create(conn, %{"receita" => receita_params}) do
-    case Finance.create_receita(receita_params) do
-      {:ok, receita} ->
-        conn
-        |> put_flash(:info, "Receita created successfully.")
-        |> redirect(to: ~p"/receitas/#{receita}")
+  defp filtrar_por_tipo(query, nil), do: query
+  defp filtrar_por_tipo(query, tipo), do: from(r in query, where: r.tipo == ^tipo)
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
-    end
-  end
+  defp filtrar_por_valor(query, nil), do: query
+  defp filtrar_por_valor(query, valor), do: from(r in query, where: r.valor >= ^valor)
 
-  def show(conn, %{"id" => id}) do
-    receita = Finance.get_receita!(id)
-    render(conn, :show, receita: receita)
-  end
+  defp filtrar_por_mes(query, nil, _), do: query
+defp filtrar_por_mes(query, _mes, nil), do: query
+defp filtrar_por_mes(query, mes, ano) do
+  from(r in query,
+    where:
+      fragment("EXTRACT(MONTH FROM ?) = ?", r.data, ^mes) and
+      fragment("EXTRACT(YEAR FROM ?) = ?", r.data, ^ano)
+  )
+end
 
-  def edit(conn, %{"id" => id}) do
-    receita = Finance.get_receita!(id)
-    changeset = Finance.change_receita(receita)
-    render(conn, :edit, receita: receita, changeset: changeset)
-  end
-
-  def update(conn, %{"id" => id, "receita" => receita_params}) do
-    receita = Finance.get_receita!(id)
-
-    case Finance.update_receita(receita, receita_params) do
-      {:ok, receita} ->
-        conn
-        |> put_flash(:info, "Receita updated successfully.")
-        |> redirect(to: ~p"/receitas/#{receita}")
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, receita: receita, changeset: changeset)
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    receita = Finance.get_receita!(id)
-    {:ok, _receita} = Finance.delete_receita(receita)
-
-    conn
-    |> put_flash(:info, "Receita deleted successfully.")
-    |> redirect(to: ~p"/receitas")
+  defp filtrar_por_periodo(query, nil, nil), do: query
+  defp filtrar_por_periodo(query, nil, _data_fim), do: query
+  defp filtrar_por_periodo(query, _data_inicio, nil), do: query
+  defp filtrar_por_periodo(query, data_inicio, data_fim) do
+    from(r in query, where: r.data >= ^data_inicio and r.data <= ^data_fim)
   end
 end
